@@ -2,11 +2,12 @@ import types
 
 from abc import abstractmethod
 from pydantic import BaseModel
-from typing import Optional, Type
+from typing import List, Optional, Type
 
 from kascade import enums
 
 from kascade.config import settings as default_settings, Settings
+from kascade.table import Table
 
 try:
     import aiomysql
@@ -31,14 +32,6 @@ class BaseKascade(BaseModel):
     settings: Optional[Settings] = None
     _connection = None
 
-    @abstractmethod
-    async def _connect(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    async def _disconnect(self):
-        raise NotImplementedError
-
     async def __aenter__(self) -> 'BaseKascade':
         await self._connect()
         return self
@@ -50,6 +43,23 @@ class BaseKascade(BaseModel):
         exc_tb: Optional[types.TracebackType]
     ) -> None:
         await self._disconnect()
+
+    @abstractmethod
+    async def _connect(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def _disconnect(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def apply_tables(self, tables: List[Table]) -> None:
+        """It is a declarative whay to specify the tables to be created.
+
+        Args:
+            tables (List[Table]): List of tables to be created in the database.
+        """
+        raise NotImplementedError
 
 
 class SqliteKascade(BaseKascade):
@@ -70,6 +80,9 @@ class SqliteKascade(BaseKascade):
         if self._connection is not None:
             await self._connection.close()
             self._connection = None
+
+    async def apply_tables(self, tables: List[Table]) -> None:
+        raise NotImplementedError
 
 
 class MysqlKascade(BaseKascade):
