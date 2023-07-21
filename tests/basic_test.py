@@ -1,11 +1,11 @@
 import asyncio
 
-from base import Kascade
+from kascade.base import Kascade
 
 
 async def main():
     async with Kascade() as db:
-        print('main')
+        pass
 
 
 if __name__ == '__main__':

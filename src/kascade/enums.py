@@ -1,3 +1,5 @@
+from typing import List
+
 from enum import Enum, auto
 
 
@@ -6,7 +8,7 @@ class StrEnum(Enum):
         name: str,
         start: int,
         count: int,
-        last_values: list[str],
+        last_values: List[str],
     ):
         return name
 

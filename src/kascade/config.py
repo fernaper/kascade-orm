@@ -4,7 +4,7 @@ from pydantic import validator
 from pydantic_settings import BaseSettings
 from typing import Optional
 
-import enums
+from kascade import enums
 
 KASCADE_ENV_FILE = os.getenv('KASCADE_ENV_FILE', '.env')
 
