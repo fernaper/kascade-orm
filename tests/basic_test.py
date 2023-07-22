@@ -4,11 +4,12 @@ from kascade.base import Kascade
 from kascade.table import Table
 
 class Users(Table):
-    pass
+    name: str
+    email: str
 
 async def main():
     async with Kascade() as db:
-        print(Users().table_name)
+        print(Users.get_table_name())
 
 
 if __name__ == '__main__':

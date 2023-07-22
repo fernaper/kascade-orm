@@ -1,5 +1,7 @@
 from pydantic import BaseModel, validator
 from typing import Dict, List, Optional
+from typing_extensions import Self
+
 
 from kascade import enums
 
@@ -10,10 +12,7 @@ class Column(BaseModel):
 
 
 class Table(BaseModel):
-    table_name: Optional[str] = None
 
-    @validator('table_name', pre=True, always=True)
-    def use_class_name_by_default(cls, v, values):
-        if v is None:
-            return cls.__name__.lower()
-        return v
+    @classmethod
+    def get_table_name(cls) -> str:
+        return cls.__name__.lower()

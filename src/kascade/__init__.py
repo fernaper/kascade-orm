@@ -8,3 +8,4 @@ __version__ = '0.0.1'
 
 
 from .base import BaseKascade
+from .table import Table
