@@ -1,6 +1,6 @@
 import asyncio
 
-from kascade.base import Kascade
+from kascade import Kascade
 from kascade.table import Table
 
 class Users(Table):

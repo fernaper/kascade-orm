@@ -1,13 +1,15 @@
 import argparse
+import asyncio
 import importlib.util
 import inspect
 import logging
 import pathlib
 import sys
 
+from types import ModuleType
 from typing import Optional
 
-from kascade import Table
+from kascade import Table, Kascade
 
 log: logging.Logger = logging.getLogger(__name__)
 
@@ -51,18 +53,22 @@ def is_python_file(path: str) -> str:
     return path
 
 
-def import_file(path: pathlib.Path):
+def import_file(path: pathlib.Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location('tables', path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-def get_table(tables_path: pathlib.Path):
+def get_diff(tables_path: pathlib.Path):
+    pass
+
+
+async def get_table(tables_path: pathlib.Path):
     tables = import_file(tables_path)
-    
     declared_tables = inspect.getmembers(tables, inspect.isclass)
 
+    print(f'{" #" * 5}  KASCADE CONFIGURATION {"# " * 5}\n')
     for _, table in declared_tables:
         if not issubclass(table, Table) or table == Table:
             continue
@@ -72,6 +78,10 @@ def get_table(tables_path: pathlib.Path):
                 f'\t{key}: {str(value).replace("annotation=", "")}'
             )
         print()
+    
+    print(f'{" #" * 5} DATABASE CONFIGURATION {"# " * 5}')
+    async with Kascade() as db:
+        await db.get_tables()
 
 
 def apply_table(tables_path: pathlib.Path):
@@ -119,11 +129,13 @@ def main():
         default='tables.py'
     )
 
+    # TODO: Maybe accept a settings kwarg to override the default settings
+
     args = parser.parse_args()
 
-    if args.table == 'table':
+    if args.object == 'table':
         if args.action == 'get':
-            get_table(args.tables_path)
+            asyncio.run(get_table(args.tables_path))
         elif args.action == 'apply':
             apply_table(args.tables_path)
         elif args.action == 'delete':

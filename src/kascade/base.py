@@ -61,6 +61,15 @@ class BaseKascade(BaseModel):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    async def get_tables(self) -> List[Table]:
+        """Get the tables from the database.
+
+        Returns:
+            List[Table]: List of tables from the database.
+        """
+        raise NotImplementedError
+
 
 class SqliteKascade(BaseKascade):
 
@@ -83,6 +92,25 @@ class SqliteKascade(BaseKascade):
 
     async def apply_tables(self, tables: List[Table]) -> None:
         raise NotImplementedError
+
+    async def get_tables(self) -> List[Table]:
+        cursor = await self._connection.execute(
+            'SELECT name FROM sqlite_master WHERE type="table";'
+        )
+        table_names = await cursor.fetchall()
+        tables: List[Table] = []
+
+        for table_name in table_names:
+            table_name = table_name[0]
+            print(f"Table: {table_name}")
+            cursor = await self._connection.execute(f'PRAGMA table_info({table_name});')
+            table_info = await cursor.fetchall()
+            for col_info in table_info:
+                col_name, col_type, _, _, _, is_primary_key = col_info
+                primary_key_str = 'PRIMARY KEY' if is_primary_key else ''
+                print(f"  Column: {col_name}, Type: {col_type}, {primary_key_str}")
+
+        print(tables)
 
 
 class MysqlKascade(BaseKascade):

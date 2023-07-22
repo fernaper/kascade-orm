@@ -7,5 +7,5 @@ __copyright__ = 'Copyright 2023 Fernando Pérez'
 __version__ = '0.0.1'
 
 
-from .base import BaseKascade
+from .base import BaseKascade, Kascade
 from .table import Table
