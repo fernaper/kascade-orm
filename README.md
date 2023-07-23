@@ -178,8 +178,45 @@ async def main():
             }
         })
 
+# Example on how to define Type Hints
+def item_example() -> Kascade.Item:
+    pass
+
+
+# Example on how to skip some parameters
+def user_example() -> kascade.User.exclude('password'):
+    pass
 
 if __name__ == '__main__':
     asyncio.run(main())
 
+```
+
+In order to suppor include or exclude we are going to solve it in a way similar to:
+
+```python
+from typing import get_type_hints
+from pydantic import BaseModel, create_model
+
+# `create_model` <--- this is the solution
+# https://chat.openai.com/share/cfa989a8-7ac4-4508-abd8-f39ca5a17602
+
+class Table(BaseModel):
+    a: int = 1
+    b: int = 2
+
+    @classmethod
+    def exclude(cls, *field_names):
+        annotations = get_type_hints(cls)
+        field_names = set(field_names)
+        for field_name in field_names:
+            annotations.pop(field_name, None)
+        fields_dict = cls.model_fields
+        new_fields = {
+            name: field for name, field in fields_dict.items() if name not in field_names
+        }
+        namespace = {'__annotations__': annotations}
+        new_class = type(cls.__name__, (BaseModel,), namespace)
+        new_class.__fields__ = new_fields
+        return new_class
 ```
